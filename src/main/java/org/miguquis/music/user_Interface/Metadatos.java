@@ -1,13 +1,13 @@
-package org.miguquis.music.user_Interface;
+package org.miguquis.music.dev_Interface;
 
-public class Metadatos {
+import org.json.JSONObject;
+
+public class Metadatos implements Format{
     public String titulo;
     public String artista;
     public String album;
     public String genero;
     public String ano;
-
-
 
     public String ruta;
 
@@ -21,6 +21,17 @@ public class Metadatos {
         this.genero = genero;
         this.ano = ano;
         this.ruta = ruta;
+    }
+
+    public Metadatos(JSONObject json){
+        this(
+                json.getString("titulo"),
+                json.getString("artista"),
+                json.getString("album"),
+                json.getString("genero"),
+                json.getString("ano"),
+                json.getString("ruta")
+        );
     }
 
     public String getTitulo() {
@@ -69,5 +80,23 @@ public class Metadatos {
 
     public void setRuta(String ruta) {
         this.ruta = ruta;
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("Metadatos{");
+        sb.append("titulo=").append(titulo);
+        sb.append("artista=").append(artista);
+        sb.append("album=").append(album);
+        sb.append("genero=").append(genero);
+        sb.append("ano=").append(ano);
+        sb.append("ruta=").append(ruta);
+        sb.append("}");
+        return sb.toString();
+    }
+    @Override
+    public JSONObject toJSONObject(){
+        return new JSONObject(this);
     }
 }

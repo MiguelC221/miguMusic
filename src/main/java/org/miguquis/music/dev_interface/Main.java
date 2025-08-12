@@ -1,4 +1,4 @@
-package org.miguquis.music.dev_interface;
+package org.miguquis.music.user_Interface;
 
 import java.io.*;
 import java.nio.file.Files;
@@ -6,34 +6,40 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import org.json.JSONObject;
+import org.json.JSONArray;
 
+import com.google.gson.Gson;
 import org.jaudiotagger.audio.AudioFile;
 import org.jaudiotagger.audio.AudioFileIO;
 import org.jaudiotagger.tag.FieldKey;
 import org.jaudiotagger.tag.Tag;
-import org.miguquis.music.user_Interface.Metadatos;
+import org.miguquis.music.dev_Interface.FileGestor;
+import org.miguquis.music.dev_Interface.Metadatos;
 
 public class Main {
-
-
     public static void main(String[] args) {
         Main app = new Main();
-        List<Metadatos> lista = app.readCSV();
+        List<Metadatos> canciones = app.readCSV();
+        
 
-        List listaReproduccion;
-        List reproducirAleatorio;
-        List reproduccion;
-        List carpetas;
+        //crear carpetas de metadata
+        FileGestor fg = new FileGestor();
+        fg.fileExists();
 
         //chequeo de carpeta analizada (implementación temprana)
         //True para analizar carpetas, FALSE para omitir
         boolean checkFolder = true;
         if (checkFolder) {
-            ReadFolder();
+            ReadFolderJSON();
         }
 
-        app.GetFiles(lista);
+        app.GetFiles(canciones);
+        writeJSON(canciones);
+    }
 
+    public static void writeJSON(List<Metadatos> lista) {
+        Gson gson = new Gson();
     }
 
     public void GetFiles(List<Metadatos> list) {
@@ -73,15 +79,13 @@ public class Main {
         return metadataList;
     }
 
-    public static void ReadFolder() {
-        // Leer y guardar en csv los archivos
+    public static void ReadFolderJSON() {
         Path carpetaMusica = Paths.get("E:\\Música");
-        String archivoCSV = "./resources/metadata.csv";
+        String archivoJSON = "./cache/metadata.json";
 
-        try (FileWriter writer = new FileWriter(archivoCSV)) {
-            // Note: Año = var: anio
-            writer.append("Titulo,Artista,Album,Género,Año,Ruta\n");
+        JSONArray listaCanciones = new JSONArray();
 
+        try {
             Files.walk(carpetaMusica)
                     .filter(Files::isRegularFile)
                     .filter(p -> p.toString().toLowerCase().endsWith(".mp3")
@@ -92,40 +96,48 @@ public class Main {
                             AudioFile audioFile = AudioFileIO.read(archivo.toFile());
                             Tag tag = audioFile.getTag();
 
-                            String titulo = limpiarCSV(tag.getFirst(FieldKey.TITLE));
-                            String artista = limpiarCSV(tag.getFirst(FieldKey.ARTIST));
-                            String album = limpiarCSV(tag.getFirst(FieldKey.ALBUM));
-                            String genero = limpiarCSV(tag.getFirst(FieldKey.GENRE));
-                            String anio = limpiarCSV(tag.getFirst(FieldKey.YEAR));
-                            String rutaCompleta = limpiarCSV(archivo.toAbsolutePath().toString());
+                            String json = """
+                                    {
+                                        "titulo" : titulo,
+                                        "artista" : artista,
+                                        "album" : album,
+                                        "genero" : genero,
+                                        "anio" : anio,
+                                        "ruta" : ruta,
+                                    }
+                                    """;
 
-                            try {
-                                writer.append(titulo).append(",")
-                                        .append(artista).append(",")
-                                        .append(album).append(",")
-                                        .append(anio).append(",")
-                                        .append(genero).append(",")
-                                        .append(rutaCompleta).append("\n");
-                            } catch (IOException e) {
-                                e.printStackTrace();
-                            }
+                            String titulo = tag.getFirst(FieldKey.TITLE);
+                            String artista = (tag.getFirst(FieldKey.ARTIST));
+                            String album = (tag.getFirst(FieldKey.ALBUM));
+                            String genero = (tag.getFirst(FieldKey.GENRE));
+                            String anio = (tag.getFirst(FieldKey.YEAR));
+                            String rutaCompleta = (archivo.toAbsolutePath().toString());
+
+                            JSONObject cancion = new JSONObject();
+                            cancion.put("Titulo:", titulo);
+                            cancion.put("Artista:", artista);
+                            cancion.put("Album:", album);
+                            cancion.put("Genero:", genero);
+                            cancion.put("Anio", anio);
+                            cancion.put("Ruta", rutaCompleta);
+
+                            listaCanciones.put(cancion);
 
                         } catch (Exception e) {
                             System.err.println("No se pudo leer metadata de: " + archivo.getFileName());
                         }
                     });
 
-            System.out.println("CSV generado en: " + archivoCSV);
+            // Guardar el JSON en disco
+            try (FileWriter file = new FileWriter(archivoJSON)) {
+                file.write(listaCanciones.toString());
+            }
+
+            System.out.println("JSON generado en: " + archivoJSON);
 
         } catch (IOException e) {
             e.printStackTrace();
         }
-    }
-
-    // Evitar problemas con comas y saltos de línea en el CSV
-    private static String limpiarCSV(String texto) {
-        if (texto == null)
-            return "";
-        return texto.replace(",", " ").replace("\n", " ").replace("\r", " ");
     }
 }
