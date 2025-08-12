@@ -10,8 +10,8 @@ public class FileGestor {
 
     public static void fileExists(){
         try{
-            Files.createDirectories(Paths.get("./cache"));
-            File yourFile = new File("./cache/metadata.json");
+            Files.createDirectories(Paths.get("./data"));
+            File yourFile = new File("./data/metadata.json");
             yourFile.createNewFile(); // if file already exists will do nothing
             FileOutputStream oFile = new FileOutputStream(yourFile, false);
 

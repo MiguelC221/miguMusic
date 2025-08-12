@@ -81,7 +81,7 @@ public class Main {
 
     public static void ReadFolderJSON() {
         Path carpetaMusica = Paths.get("E:\\Música");
-        String archivoJSON = "./cache/metadata.json";
+        String archivoJSON = "./data/metadata.json";
 
         JSONArray listaCanciones = new JSONArray();
 
