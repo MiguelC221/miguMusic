@@ -96,17 +96,6 @@ public class Main {
                             AudioFile audioFile = AudioFileIO.read(archivo.toFile());
                             Tag tag = audioFile.getTag();
 
-                            String json = """
-                                    {
-                                        "titulo" : titulo,
-                                        "artista" : artista,
-                                        "album" : album,
-                                        "genero" : genero,
-                                        "anio" : anio,
-                                        "ruta" : ruta,
-                                    }
-                                    """;
-
                             String titulo = tag.getFirst(FieldKey.TITLE);
                             String artista = (tag.getFirst(FieldKey.ARTIST));
                             String album = (tag.getFirst(FieldKey.ALBUM));
